@@ -34,11 +34,12 @@ async function run() {
     // Connect the client to the server (optional starting in v4.7)
     await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("natours-test").command({ ping: 1 });
+    const dbName = process.env.DB_NAME || "natours-test";
+    await client.db(dbName).command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     // View db data in console
-    const tours = await client.db("natours-test").collection("tours").find({}).toArray();
+    const tours = await client.db(dbName).collection("tours").find({}).toArray();
     console.log("Tours data:", tours);
   } finally {
     // Ensures that the client will close when you finish/error
