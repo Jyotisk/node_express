@@ -5,9 +5,9 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 dotenv.config({path:'./config.env'})
 const app =require('./app');
 //for server
-// const DB=process.env.DATABASE.replace('<PASSWORD>',process.env.DATABASE_PASSWORD)
+const DB=process.env.DATABASE.replace('<PASSWORD>',process.env.DATABASE_PASSWORD)
 // for local
-const DB=process.env.MONGO_URI
+// const DB=process.env.MONGO_URI
 
 // mongodb.connect(DB,{
 //   useNewUrlParser:true,
@@ -39,7 +39,7 @@ async function run() {
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     // View db data in console
-    const tours = await client.db(dbName).collection("tours").find({}).toArray();
+    const tours = await client.db(dbName).collection(dbName).find({}).toArray();
     console.log("Tours data:", tours);
   } finally {
     // Ensures that the client will close when you finish/error
