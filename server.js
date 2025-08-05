@@ -1,57 +1,22 @@
-const mongodb=require('mongodb')
-const dotenv=require('dotenv');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const dotenv = require('dotenv');
+const app = require('./app');
+const mongoose = require('mongoose');
 
-dotenv.config({path:'./config.env'})
-const app =require('./app');
-//for server
-const DB=process.env.DATABASE.replace('<PASSWORD>',process.env.DATABASE_PASSWORD)
-// for local
-// const DB=process.env.MONGO_URI
+dotenv.config({ path: './config.env' });
 
-// mongodb.connect(DB,{
-//   useNewUrlParser:true,
-//   useCreateIndex:true,
-//   useFindAndModify:false
-// }).then(con=>{
-//   console.log(con.connection);
-//   console.log("db connected successfull");
-  
-  
-// });
+const DB = process.env.MONGO_URI;
+
+mongoose.connect(DB, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('DB connection successful!'))
+.catch(err => console.log('DB connection error:', err));
+
+// Define schema & model
 
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(DB, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
-});
-async function run() {
-  try {
-    // Connect the client to the server (optional starting in v4.7)
-    await client.connect();
-    // Send a ping to confirm a successful connection
-    const dbName = process.env.DB_NAME || "natours-test";
-    await client.db(dbName).command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-
-    // View db data in console
-    const tours = await client.db(dbName).collection(dbName).find({}).toArray();
-    console.log("Tours data:", tours);
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
-  }
-}
-run().catch(console.dir);
-
-
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`App running on port: ${port}`);
 });
-
-
