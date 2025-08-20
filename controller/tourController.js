@@ -27,13 +27,27 @@ exports.allTour = async (req, res) => {
 
     // console.log(req.query,queryObj);
     //2) Advance quering
-    let queryStr = JSON.stringify(queryObj);
-    console.log(queryStr);
-    
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
-    console.log(JSON.parse(queryStr));
+    // let queryStr = JSON.stringify(queryObj);
 
-    const query = Tour.find(JSON.parse(queryStr));
+    // queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
+    // const filter=JSON.parse(queryStr)
+
+    let filter = {};
+
+    Object.keys(queryObj).forEach((key) => {
+      if (key.includes("[")) {
+        // example: "duration[gte]"
+        const [field, operator] = key.split("["); // ["duration", "gte]"]
+        const op = operator.replace("]", ""); // "gte"
+
+        if (!filter[field]) filter[field] = {};
+        filter[field][`$${op}`] = Number(queryObj[key]); // convert value to number
+      } else {
+        filter[key] = queryObj[key]; // normal key=value
+      }
+    });
+
+    let query = Tour.find(filter);
     // const allTour = await Tour.find({
     //   duration: 5,
     //   difficulty: "easy",
@@ -46,6 +60,25 @@ exports.allTour = async (req, res) => {
     // const allTour = await Tour.find();
 
     //execute the query
+   
+   //3 Sorting
+
+   if(req.query.sort){
+
+    const sortBy=req.query.sort.split(',').join(' ');
+    
+    query=query.sort(sortBy)
+   }else{
+    query=query.sort('-createdAt')
+   }
+
+   if(req.query.fields){
+    const fields=req.query.fields.split(',').join(' ');
+    query=query.select(fields)
+   }else{
+    query=query.select('-__v')
+   }
+
     const allTour = await query;
 
     res.status(200).json({
