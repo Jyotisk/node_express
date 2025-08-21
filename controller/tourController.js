@@ -60,24 +60,34 @@ exports.allTour = async (req, res) => {
     // const allTour = await Tour.find();
 
     //execute the query
-   
-   //3 Sorting
 
-   if(req.query.sort){
+    //3 Sorting
 
-    const sortBy=req.query.sort.split(',').join(' ');
-    
-    query=query.sort(sortBy)
-   }else{
-    query=query.sort('-createdAt')
-   }
+    if (req.query.sort) {
+      const sortBy = req.query.sort.split(",").join(" ");
 
-   if(req.query.fields){
-    const fields=req.query.fields.split(',').join(' ');
-    query=query.select(fields)
-   }else{
-    query=query.select('-__v')
-   }
+      query = query.sort(sortBy);
+    } else {
+      query = query.sort("-createdAt");
+    }
+
+    if (req.query.fields) {
+      const fields = req.query.fields.split(",").join(" ");
+      query = query.select(fields);
+    } else {
+      query = query.select("-__v");
+    }
+
+    //4) Pagination
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+    const skip = (page - 1) * limit;
+
+    if (req.query.page) {
+      const numTour = await Tour.countDocuments();
+      if (skip >= numTour) throw new Error("This page does not exis");
+    }
+    query = query.skip(skip).limit(limit);
 
     const allTour = await query;
 
