@@ -4,7 +4,6 @@ const authController=require(`${__dirname}/../controller/authController`)
 
 const userRouter = express.Router();
 
-
 userRouter.post('/signup',authController.signup)
 
 userRouter.route("/").get(routController.allUsers).post(routController.createUser);
