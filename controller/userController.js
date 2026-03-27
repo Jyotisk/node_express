@@ -1,9 +1,17 @@
-exports.allUsers = (req, res) => {
+const User = require("./../models/userModel");
+const catchAsync = require("../utils/catchAsync.js");
+
+exports.allUsers = catchAsync(async (req, res) => {
+  const users= await User.find();
+
   res.status(500).json({
     status: "success",
-    message: "users not available",
+    results:users.length,
+    data:{
+      users
+    },
   });
-};
+});
 
 exports.getUsers = (req, res) => {
   res.status(500).json({
