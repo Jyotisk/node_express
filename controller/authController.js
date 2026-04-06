@@ -22,7 +22,8 @@ exports.signup = catchAsync(async (req, res, next) => {
     email: req.body.email,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
-    passwordChangeAt: req.body.passwordChangeAt
+    passwordChangeAt: req.body.passwordChangeAt,
+    role: req.body.role,
   });
   const token = signToken(newUser._id);
 
@@ -73,18 +74,45 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   //2) validate token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  
+
   //3) check if user still exists
-  const currentUser=await User.findById(decoded.id)
-  if(!currentUser){
-    return next(new AppError('The user belongs to this user does not exists'))
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) {
+    return next(new AppError("The user belongs to this user does not exists"));
   }
   //4)chek if user change password after jwt is issued
-   if(currentUser.changedPasswordAfter(decoded.iat)){
-    return next(new AppError('User password recently changed! please login again'),401)
-   }
- // grant access to protected route
-   req.user=currentUser;
+  if (currentUser.changedPasswordAfter(decoded.iat)) {
+    return next(
+      new AppError("User password recently changed! please login again"),
+      401,
+    );
+  }
+  // grant access to protected route
+  req.user = currentUser;
 
   next();
 });
+exports.restrictTo = (...roles) => {
+  return (req, res, next) => {
+    // roles['admin','lead-guide']. role=user
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError("You donot have permission to perform this action", 403),
+      );
+    }
+    next();
+  };
+};
+
+exports.forgotPassword = catchAsync(async (req, res, next) => {
+  //1 get user based on email
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new AppError("There is no user with this email address.", 404));
+  }
+  //2) Gennerate the random reset token
+  const resetToken = user.createPasswordResetToken();
+  await user.save({ validateBeforeSave: false });
+  //3
+});
+exports.resetPassword = (req, res, next) => {};
