@@ -166,7 +166,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
 exports.updatePassword = catchAsync(async (req, res, next) => {
   //1 ) Get User for collection
-  const user = await user.findById(req.user.id).select("+password");
+  const user = await User.findById(req.user.id).select("+password");
   console.log(user);
   
   //2 Check POSTed password is correct
