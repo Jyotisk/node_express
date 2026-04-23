@@ -8,8 +8,13 @@ userRouter.post("/signup", authController.signup);
 userRouter.post("/login", authController.login);
 userRouter.post("/forgotPassword", authController.forgotPassword);
 userRouter.patch("/resetPassword/:token", authController.resetPassword);
-userRouter.patch("/updateMyPassword", authController.protect, authController.updatePassword);
+userRouter.patch(
+  "/updateMyPassword",
+  authController.protect,
+  authController.updatePassword,
+);
 userRouter.patch("/updateMe", authController.protect, routController.updateMe);
+userRouter.delete("/deleteMe", authController.protect, routController.deleteMe);
 
 userRouter
   .route("/")
