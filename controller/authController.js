@@ -6,6 +6,7 @@ const sendEmail = require("../utils/email.js");
 const { promisify } = require("util");
 const crypto = require("crypto");
 
+
 const signToken = (id) => {
   return jwt.sign(
     {
@@ -19,6 +20,18 @@ const signToken = (id) => {
 };
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIEE_EXOPIRES_IN * 23 * 60 * 60 * 1000,
+    ),
+    httpOnly: true
+  };
+  if(process.env.NODE_ENV==='productions') cookieOptions.secure=true;
+
+  res.cookie("jwt", token, cookieOptions);
+
+  // Remove password from output
+  user.password =undefined;
 
   res.status(statusCode).json({
     status: "success",
@@ -168,7 +181,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   //1 ) Get User for collection
   const user = await User.findById(req.user.id).select("+password");
   console.log(user);
-  
+
   //2 Check POSTed password is correct
   if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
     return next(new AppError("Your corrent password is wrong", 401));
